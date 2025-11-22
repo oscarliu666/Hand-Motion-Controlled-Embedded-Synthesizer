@@ -3,6 +3,6 @@
 ## Peripherals
 ## Schematic Diagram
 Here is the schematic diagram for the circuit.
-![image](https://github.gatech.edu/user-attachments/assets/85906732-99ed-47aa-a130-7a7984a8843f)
+![image](https://github.gatech.edu/user-attachments/assets/62cf65ad-bd83-4ff8-b533-c9f1d26f4ced)
 ## Why Unique
 ## Future Work
