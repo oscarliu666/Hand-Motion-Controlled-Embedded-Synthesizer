@@ -40,7 +40,7 @@ void ARDUINO_ISR_ATTR incFcw()
   if (digitalRead(MUTE_PIN))
     volume = 0;
   // uint8_t out = (pot_val / 255.0) * lut[getTableIdx(phase)];
-  uint8_t out = (volume / 255.0) * sin_lut[getTableIdx(phase)];
+  uint8_t out = (volume / 255.0) * sq_lut[getTableIdx(phase)];
   dacWrite(DAC_PIN, out);
 }
 
@@ -99,28 +99,29 @@ void loop() {
   uint8_t freq_index = 0;
   if (sample <= 30)
   {
-    // freq_index = 0;
-    freq = C3;
+    freq_index = 0;
+    // freq = C3;
     volume = 0;
   }
-  else if (sample <= 60)
-  {
-    freq = C4;
-    volume = pot_val;
-  }
+  // else if (sample <= 60)
+  // {
+  //   // freq = C4;
+  //   freq_index = 0;
+  //   volume = pot_val;
+  // }
   else if (sample >= 300)
   {
-    freq_index = C4;
+    freq_index = SCALE_SIZE - 1;
     volume = pot_val;
   }
-  else 
+  else
   {
-    // float width = (300 - 30) / SCALE_SIZE;
-    // freq_index = (uint16_t)((sample - 30) / width);
-    freq = map(sample, 60, 300, C3, C4) << 1;
+    float width = (300 - 30) / SCALE_SIZE;
+    freq_index = (uint16_t)((sample - 30) / width);
+    // freq = map(sample, 60, 300, C3, C4) << 1;
     volume = pot_val;
   }
-  // freq = c3_scale[freq_index] << 1;
+  freq = c3_scale[freq_index] << 1;
   tuning_word = getFreqCtrlWord(freq);
 
   ulcd_update_volume(volume);
