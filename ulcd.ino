@@ -1,6 +1,7 @@
 #include "Goldelox_Serial_4DLib.h"
 #include "Goldelox_Const4D.h"
 #include "ulcd.h"
+#include <Preferences.h>
 
 #define TX_PIN      14   // UART2 TX
 #define RX_PIN      13   // UART2 RX  2
@@ -8,6 +9,7 @@
 
 HardwareSerial DisplaySerial(1);
 Goldelox_Serial_4DLib Display(&DisplaySerial);
+static Preferences UlcdPref;
 
 void ulcd_init()
 {
@@ -33,29 +35,29 @@ void ulcd_init()
   Serial.println("Initialized ULCD screen");
 }
 
-// SIN -> TRI -> SAW -> SQU -> SIN ...
-void ulcd_nav_wave(volatile Wave *wave)
-{
-  static unsigned long lastChange = 0;
-  unsigned long now = millis();
+// // SIN -> TRI -> SAW -> SQU -> SIN ...
+// void ulcd_nav_wave(volatile Wave *wave)
+// {
+//   static unsigned long lastChange = 0;
+//   unsigned long now = millis();
 
-  // 150 ms
-  if (now - lastChange < 150) return;
+//   // 150 ms
+//   if (now - lastChange < 150) return;
 
   
-  if (!digitalRead(BUTTON_RIGHT)) {
-    // 
-    *wave = (Wave)((*wave + 1) % 4);
-    ulcd_update_wave(*wave);
-    lastChange = now;
+//   if (!digitalRead(BUTTON_RIGHT)) {
+//     // 
+//     *wave = (Wave)((*wave + 1) % 4);
+//     ulcd_update_wave(*wave);
+//     lastChange = now;
 
-  } else if (!digitalRead(BUTTON_LEFT)) {
-    //
-    *wave = (Wave)((*wave + 3) % 4);
-    ulcd_update_wave(*wave);
-    lastChange = now;
-  }
-}
+//   } else if (!digitalRead(BUTTON_LEFT)) {
+//     //
+//     *wave = (Wave)((*wave + 3) % 4);
+//     ulcd_update_wave(*wave);
+//     lastChange = now;
+//   }
+// }
 
 
 void ulcd_update_wave(Wave wave)
@@ -63,21 +65,21 @@ void ulcd_update_wave(Wave wave)
   char buf[16];
   switch (wave)
   {
-    case SIN:
+    case 0:
       snprintf(buf, sizeof(buf), "Sine");break;
-    case TRI:
+    case 1:
       snprintf(buf, sizeof(buf), "Triangle");break;
-    case SAW:
+    case 2:
       snprintf(buf, sizeof(buf), "Sawtooth");break;
-    case SQU:
+    case 3:
       snprintf(buf, sizeof(buf), "Square");break;
     default:
       snprintf(buf, sizeof(buf), "");break;
   }
- 
+  Serial.println("updated");
 
   Display.txt_MoveCursor(1, 7);
-  Display.putstr("     ");   // clear old
+  Display.putstr("        ");   // clear old
   Display.txt_MoveCursor(1, 7);
   Display.putstr(buf);
 }
@@ -98,4 +100,46 @@ void ulcd_update_volume(uint16_t vol)
   // Display.putstr("      ");
   Display.txt_MoveCursor(5, 7);
   Display.putstr(buf);
+  ulcd_save_settings(lut_index, vol);
+
+
+}
+
+void ulcd_save_settings(uint8_t wave_index, uint16_t vol)
+{
+  static uint8_t lastWave = 255;
+  static uint16_t lastVol = 65535;
+  static unsigned long lastWrite = 0;
+  unsigned long now = millis();
+
+
+  if (now - lastWrite < 1000 &&
+      wave_index == lastWave &&
+      abs((int)vol - (int)lastVol) < 5)
+    return;
+
+  UlcdPref.begin("msynth", false);   // write mode
+  UlcdPref.putInt("wave", (int)wave_index);
+  UlcdPref.putInt("vol",  (int)vol);
+  UlcdPref.end();
+
+  lastWave = wave_index;
+  lastVol = vol;
+  lastWrite = now;
+}
+
+
+void ulcd_load_settings(uint8_t *wave_index, uint16_t *vol)
+{
+  UlcdPref.begin("msynth", true);   // read-only mode
+
+  int w = UlcdPref.getInt("wave", 0);      // 默认 0 = Sine
+  int v = UlcdPref.getInt("vol", 128);     // 默认 128 (~50%)
+
+  UlcdPref.end();
+
+  if (w < 0 || w > 3) w = 0;
+
+  *wave_index = (uint8_t)w;
+  *vol = (uint16_t)v;
 }
