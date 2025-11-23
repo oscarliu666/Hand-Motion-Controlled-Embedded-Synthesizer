@@ -33,22 +33,48 @@ void ulcd_init()
   Serial.println("Initialized ULCD screen");
 }
 
+// SIN -> TRI -> SAW -> SQU -> SIN ...
+void ulcd_nav_wave(volatile Wave *wave)
+{
+  static unsigned long lastChange = 0;
+  unsigned long now = millis();
+
+  // 150 ms
+  if (now - lastChange < 150) return;
+
+  
+  if (!digitalRead(BUTTON_RIGHT)) {
+    // 
+    *wave = (Wave)((*wave + 1) % 4);
+    ulcd_update_wave(*wave);
+    lastChange = now;
+
+  } else if (!digitalRead(BUTTON_LEFT)) {
+    //
+    *wave = (Wave)((*wave + 3) % 4);
+    ulcd_update_wave(*wave);
+    lastChange = now;
+  }
+}
+
+
 void ulcd_update_wave(Wave wave)
 {
-  char *buf;
+  char buf[16];
   switch (wave)
   {
     case SIN:
-      buf = "Sine";
+      snprintf(buf, sizeof(buf), "Sine");break;
     case TRI:
-      buf = "Triangle";
+      snprintf(buf, sizeof(buf), "Triangle");break;
     case SAW:
-      buf = "Sawtooth";
+      snprintf(buf, sizeof(buf), "Sawtooth");break;
     case SQU:
-      buf = "Square";
+      snprintf(buf, sizeof(buf), "Square");break;
     default:
-      buf = "";
+      snprintf(buf, sizeof(buf), "");break;
   }
+ 
 
   Display.txt_MoveCursor(1, 7);
   Display.putstr("     ");   // clear old

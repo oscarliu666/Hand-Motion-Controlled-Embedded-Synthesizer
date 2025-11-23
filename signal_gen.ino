@@ -7,6 +7,12 @@
 #define POT_PIN 34
 #define MUTE_PIN 27
 
+#define BUTTON_UP   16
+#define BUTTON_DOWN 23
+#define BUTTON_RIGHT 19
+#define BUTTON_LEFT 18
+
+
 #define C3 130
 #define C4 262
 
@@ -28,6 +34,9 @@ uint8_t *lut;
 
 hw_timer_t *timer;
 
+volatile Wave currentWave = SIN;   // 当前选中的波形
+
+
 // void ARDUINO_ISR_ATTR onVolumeChange()
 // {
 //   ulcd_update_volume(volume);
@@ -40,11 +49,16 @@ void ARDUINO_ISR_ATTR incFcw()
   if (digitalRead(MUTE_PIN))
     volume = 0;
   // uint8_t out = (pot_val / 255.0) * lut[getTableIdx(phase)];
-  uint8_t out = (volume / 255.0) * sq_lut[getTableIdx(phase)];
+  uint8_t out = (volume / 255.0) * lut[getTableIdx(phase)];
   dacWrite(DAC_PIN, out);
 }
 
 void setup() {
+  pinMode(BUTTON_UP,   INPUT_PULLUP);
+  pinMode(BUTTON_DOWN, INPUT_PULLUP);
+  pinMode(BUTTON_RIGHT, INPUT_PULLUP);
+  pinMode(BUTTON_LEFT,  INPUT_PULLUP);
+
   for (int i = 0; i < NUM_SAMPLES; i++)
   {
     samples[i] = 0;
@@ -60,7 +74,7 @@ void setup() {
   ulcd_init();
 
   Serial.println("Adafruit VL53L0X test");
-  if (!lox.begin()) {
+  if (!lox.begin()) { 
     Serial.println(F("Failed to boot VL53L0X"));
     while(1);
   }
@@ -76,6 +90,17 @@ void setup() {
 }
 
 void loop() {
+  
+  ulcd_nav_wave(&currentWave);
+
+  // 2. 根据 currentWave 选择当前 LUT
+  switch (currentWave) {
+    case SIN: lut = sin_lut; break;
+    case TRI: lut = tri_lut; break;
+    case SAW: lut = saw_lut; break;
+    case SQU: lut = sq_lut;  break;
+    default:  lut = sin_lut; break;
+  }
   pot_val = map(analogRead(POT_PIN), 0, 4095, 0, 255);
 
   // Map sensor value to frequency
