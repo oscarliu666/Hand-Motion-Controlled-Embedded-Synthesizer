@@ -10,6 +10,7 @@
 
 #define SCALE_SIZE 7
 
+typedef enum {O3=0, O4, O5} octave_t;
 
 
 const uint8_t sin_lut[1024] = {
@@ -473,14 +474,14 @@ const uint8_t sq_lut[1024] = {
 
 const uint8_t* lut_list[]= {sin_lut,tri_lut,saw_lut,sq_lut};
 
-// uint16_t c3_scale[] = {131, 138, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247};
-uint16_t c3_scale[] = { 131, 147, 165, 175, 196, 220, 247 };
+uint16_t c3_scale[] = {131, 138, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262};
+// uint16_t c3_scale[] = { 131, 147, 165, 175, 196, 220, 247 };
 
-static inline uint32_t getFreqCtrlWord(uint32_t freq) {
+static inline uint32_t get_tuning_word(uint32_t freq) {
   return (uint32_t)(((double)(freq * (1ULL << REG_LENGTH))) / SAMPLE_RATE);
 }
 
-static inline uint32_t getTableIdx(uint32_t freqCtrlWord) {
+static inline uint32_t get_table_idx(uint32_t freqCtrlWord) {
   return (freqCtrlWord >> (REG_LENGTH - TABLE_IDX_LENGTH));
 }
 

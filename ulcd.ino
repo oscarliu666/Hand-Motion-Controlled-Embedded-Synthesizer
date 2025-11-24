@@ -105,6 +105,16 @@ void ulcd_update_volume(uint16_t vol)
 
 }
 
+void ulcd_update_note(uint16_t freq_index)
+{
+  char* notes[] = { "C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B ", "C ", "  "};
+
+  Display.txt_MoveCursor(9, 7);
+  // Display.putstr("      ");
+  Display.txt_MoveCursor(9, 7);
+  Display.putstr(notes[freq_index]);
+}
+
 void ulcd_save_settings(uint8_t wave_index, uint16_t vol)
 {
   static uint8_t lastWave = 255;
@@ -134,12 +144,11 @@ void ulcd_load_settings(uint8_t *wave_index, uint16_t *vol)
   UlcdPref.begin("msynth", true);   // read-only mode
 
   int w = UlcdPref.getInt("wave", 0);      // 默认 0 = Sine
-  int v = UlcdPref.getInt("vol", 128);     // 默认 128 (~50%)
 
   UlcdPref.end();
 
   if (w < 0 || w > 3) w = 0;
 
   *wave_index = (uint8_t)w;
-  *vol = (uint16_t)v;
+  // *vol = (uint16_t)v;
 }

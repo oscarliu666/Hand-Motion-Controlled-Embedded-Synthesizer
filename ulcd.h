@@ -6,6 +6,7 @@ enum Wave { SIN, TRI, SAW, SQU };
 void ulcd_init();
 void ulcd_update_wave(Wave wave);
 void ulcd_update_volume(uint16_t vol);
+void ulcd_update_note(uint16_t freq_index);
 void ulcd_save_settings(uint8_t wave_index, uint16_t vol);
 void ulcd_load_settings(uint8_t *wave_index, uint16_t *vol);
 
