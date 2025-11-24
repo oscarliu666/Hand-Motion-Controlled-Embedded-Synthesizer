@@ -18,7 +18,8 @@ This system is a motion-controlled distance-based synthesizer based on ESP-WROVE
 
 ## Schematic Diagram
 Here is the schematic diagram for the circuit.
-![image](https://github.gatech.edu/user-attachments/assets/edf3f0fc-a110-4494-bf16-b8237174f2ac)
+![image](https://github.gatech.edu/user-attachments/assets/3135417c-fa21-4202-84f5-a7e5e6973dfd)
+
 
 
 ## Why Unique
