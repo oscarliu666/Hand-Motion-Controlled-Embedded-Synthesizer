@@ -18,6 +18,9 @@ This system is a motion-controlled distance-based synthesizer based on ESP-WROVE
 
 ## Schematic Diagram
 Here is the schematic diagram for the circuit.
+![image](https://github.gatech.edu/user-attachments/assets/3135417c-fa21-4202-84f5-a7e5e6973dfd)
+
+
 
 ## Why Unique
 ## Challenges
@@ -25,6 +28,6 @@ Here is the schematic diagram for the circuit.
 
 We are considering adding a TFT touch screen to make it a more immersive and interactive system. We hope to develop a circular UI in which the outer part works as a rotary encoder to adjust the audio frequency in real-time. The user can scroll the outer part of the circle with the frequency displayed in the center of the circular UI.
 
-Additionally, we are considering designing an external enclosure for the entire system. A custom 3D-printed case would not only improve aesthetics, but also protect the electronics and make the device safer and more durable for everyday use.
+Additionally, we are considering designing an external enclosure for the entire system. A custom 3D-printed case would not only improve aesthetics but also protect the electronics and make the device safer and more durable for everyday use.
 
 
