@@ -25,6 +25,7 @@ Here is the schematic diagram for the circuit.
 ## Why Unique
 ## Challenges
 ## Future Work
+
 We are considering adding a TFT touch screen to make it a more immersive and interactive system. We hope to develop a circular UI in which the outer part works as a rotary encoder to adjust the audio frequency in real-time. The user can scroll the outer part of the circle with the frequency displayed in the center of the circular UI.
 
 Additionally, we are considering designing an external enclosure for the entire system. A custom 3D-printed case would not only improve aesthetics but also protect the electronics and make the device safer and more durable for everyday use.
