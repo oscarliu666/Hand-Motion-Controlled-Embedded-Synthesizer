@@ -1,3 +1,14 @@
+/**
+  Signal Gen header file
+
+  Contains lookup tables, constants, and formulas needed for direct digital synthesis.
+  Refer to "Implementing the synthesis" section in the report for more info on the DDS
+  method.
+
+  Lookup tables generated using Dr LUT - Free Lookup Table Generator
+  https://ppelikan.github.io/drlut/
+ */
+
 #ifndef SIGNALGEN_H
 #define SIGNALGEN_H
 
@@ -11,7 +22,6 @@
 #define SCALE_SIZE 7
 
 typedef enum {O3=0, O4, O5} octave_t;
-
 
 const uint8_t sin_lut[1024] = {
   128, 128, 129, 130, 131, 131, 132, 133,
@@ -475,9 +485,9 @@ const uint8_t sq_lut[1024] = {
 const uint8_t* lut_list[]= {sin_lut,tri_lut,saw_lut,sq_lut};
 
 uint16_t c3_scale[] = {131, 138, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247, 262};
-// uint16_t c3_scale[] = { 131, 147, 165, 175, 196, 220, 247 };
 
 static inline uint32_t get_tuning_word(uint32_t freq) {
+  // 1ULL is used to avoid overflow
   return (uint32_t)(((double)(freq * (1ULL << REG_LENGTH))) / SAMPLE_RATE);
 }
 

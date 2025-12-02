@@ -8,46 +8,53 @@
 #define POT_PIN 34
 #define MUTE_PIN 27
 
+/* Nav switch buttons */
 #define BUTTON_UP   17
 #define BUTTON_DOWN 23
 #define BUTTON_RIGHT 19
 #define BUTTON_LEFT 18
 
-#define NUM_TO_AVG 10
-
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
+/* Variables for DDS */
 uint32_t freq;
 uint32_t phase;
 uint32_t tuning_word;
+
 uint16_t volume;
 uint16_t pot_val;
 uint8_t octave = O4;
 
+/**
+  Originally we tried smoothing the sensor input by averaging, but we decided to use
+  interpolation instead, so these variables are unused. Used code from Arduino as a 
+  reference for the unused code on smoothing.
+
+  https://docs.arduino.cc/built-in-examples/analog/Smoothing/
+ */
+#define NUM_TO_AVG 10
 uint32_t freq_buf[NUM_TO_AVG];
 uint8_t read_idx = 0;
 uint32_t total = 0;;
 uint32_t avg = 0;
 
+/* Index to select from list of LUTs (sine, square, saw, triangle)*/
 uint8_t lut_index= 0;
 
+/* HW timer to trigger the interrupt to update the DAC */
 hw_timer_t *timer;
 
+/**
+  Change the selected sound with the down switch and save the settings to non-volatile
+  memory.
+ */
 void ulcd_change_wave() {
+    // Debouncing
     static unsigned long lastChange = 0;
     unsigned long now = millis();
     if (now - lastChange < 150) return;
 
-    // if (!digitalRead(BUTTON_RIGHT)) {
-    //     Serial.println("right.");
-
-    //     lut_index = (lut_index + 1) % 4;
-    //     ulcd_update_wave((Wave)lut_index);
-    //     lastChange = now;
-
-    // } else if (!digitalRead(BUTTON_LEFT)) {
     if (!digitalRead(BUTTON_DOWN)) {
-        // 向左：减 1 = 加 3 mod 4 （避免 -1）
         lut_index = (lut_index + 3) % 4;
         ulcd_update_wave((Wave)lut_index);
         lastChange = now;
@@ -55,6 +62,9 @@ void ulcd_change_wave() {
     ulcd_save_settings(lut_index, volume); 
 }
 
+/**
+  Change the selected octave with the up and down switches and save the settings to memory.
+ */
 void ulcd_change_octave() {
     static unsigned long lastChange = 0;
     unsigned long now = millis();
@@ -67,7 +77,6 @@ void ulcd_change_octave() {
         octave = (octave + 2) % 3;
         lastChange = now;
     }
-    // Serial.println(octave);
 }
 
 void ARDUINO_ISR_ATTR incFcw()
@@ -84,12 +93,16 @@ void setup() {
   pinMode(BUTTON_LEFT,  INPUT_PULLUP);
   pinMode(MUTE_PIN,  INPUT_PULLUP);
 
+  /**
+    Code to initialize unused buffer for smoothing.
+   */
   for (int i = 0; i < NUM_TO_AVG; i++)
     freq_buf[i] = 0;
 
   // put your setup code here, to run once:
   Serial.begin(115200);
 
+  // Initialize default frequency and phase
   freq = 130;
   phase = 0;
 
@@ -100,19 +113,25 @@ void setup() {
   ulcd_update_wave((Wave)lut_index);
   ulcd_update_volume(volume);
 
+  /**
+    Used sample code from https://github.com/adafruit/Adafruit_VL53L0X 
+    for initializing sensor. 
+   */
   Serial.println("Adafruit VL53L0X test");
   if (!lox.begin()) { 
     Serial.println(F("Failed to boot VL53L0X"));
     while(1);
   }
 
+  /**
+    Create the 10 MHz timer. The interrupt triggers at 44100 KHz (22.7 us).
+   */
   timer = timerBegin(REFCLK);
   timerAttachInterrupt(timer, &incFcw);
   uint64_t prescaler = REFCLK / SAMPLE_RATE;
   timerAlarm(timer, prescaler, true, 0);
 
-  pinMode(MUTE_PIN, INPUT_PULLDOWN);
-
+  // Set the volume on the screen
   ulcd_update_volume(map(analogRead(POT_PIN), 0, 4095, 0, 255));
 }
 
@@ -121,6 +140,11 @@ void loop() {
   ulcd_change_octave();
 
   pot_val = map(analogRead(POT_PIN), 0, 4095, 0, 255);
+
+  /**
+    Referred to https://github.com/adafruit/Adafruit_VL53L0X as starting point
+    for code to read from sensor. 
+   */
 
   // Get sensor reading
   VL53L0X_RangingMeasurementData_t measure;
@@ -137,7 +161,7 @@ void loop() {
   {
     total = total - freq_buf[read_idx];
 
-    /* Map sensor reading to frequency */
+    // Map sensor reading to frequency
     uint32_t range_low = 131;
     uint32_t range_high = 262;
     uint16_t min_height = 30;
@@ -146,42 +170,34 @@ void loop() {
 
     // Map raw sensor reading to frequency
     uint32_t mapped_freq = map(measure.RangeMilliMeter, 30, 400, range_low, range_high);
-    // freq_buf[read_idx] = mapped_freq;
-    // total += mapped_freq;
-    // read_idx = (read_idx + 1) % NUM_TO_AVG;
 
-    // Smoothing
-    // static float smooth = 0;
-    // float smoothing = 0.15;
-    // smooth = smooth * (1 - smoothing) + mapped_freq * smoothing;
-    // mapped_freq = smooth;
-
+    // Find the nearest frequency by basically flooring the mapped value.
     float width = (max_height - min_height) / (float)scale_size;
     uint32_t nearest_freq_index = (uint32_t)((measure.RangeMilliMeter - min_height + 1) / width);
     nearest_freq_index = constrain(nearest_freq_index, 0, scale_size - 1);
 
     uint32_t nearest_freq = c3_scale[nearest_freq_index];
 
+    /**
+      Now use linear interpolation to mix the directly mapped frequency to the nearest.
+      Alpha increases when the mapped frequency is closer to the nearest frequency, 
+      which causes the final blended output frequency to be closer to the nearest frequency.
+    */
+
     // Dynamic adjustment of blend factor alpha
-    // float alpha = 0.3;
     float distance = fabs(mapped_freq - nearest_freq);
     float snap_range = 10.0; // Hz around the note
     float alpha = 1.0 - (distance / snap_range);
     alpha = constrain(alpha, 0.0, 0.6); 
 
-    // freq = (uint32_t)(alpha * nearest_freq + (1 - alpha) * mapped_freq) << octave;
+    /** 
+      The (1 << octave) is to multiply the frequency by a power of two based on the current
+      octave. Notes at different octaves are multiples of the same frequency.
+    */
     float blended = (alpha * nearest_freq + (1 - alpha) * mapped_freq) * (1 << octave);
+    freq = (uint32_t)blended;
 
-    static float last_freq = blended;
-    float deadband = 1.5;
-
-    if (fabs(blended - last_freq) < deadband) {
-        freq = (uint32_t)last_freq;
-    } else {
-        freq = (uint32_t)blended;
-        last_freq = blended;
-    }
-
+    // Set tuning word to properly update phase
     tuning_word = get_tuning_word(freq);
     volume = pot_val;
     ulcd_update_volume(volume);
