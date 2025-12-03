@@ -54,6 +54,8 @@ Furthermore, by letting alpha vary, starting from 0.6 and getting closer to 0.0 
     - https://docs.espressif.com/projects/arduino-esp32/en/latest/api/timer.html
 - Lookup Table Generation
     - https://ppelikan.github.io/drlut/
+- Reference code for smoothing (unused and doesn't affect functionality, but still appears in source)
+    - https://docs.arduino.cc/built-in-examples/analog/Smoothing/
 
 
 ## Future Work
