@@ -188,6 +188,8 @@ void loop() {
     float distance = fabs(mapped_freq - nearest_freq);
     float snap_range = 10.0; // Hz around the note
     float alpha = 1.0 - (distance / snap_range);
+    
+    // The max blend factor is 0.6
     alpha = constrain(alpha, 0.0, 0.6); 
 
     /** 
