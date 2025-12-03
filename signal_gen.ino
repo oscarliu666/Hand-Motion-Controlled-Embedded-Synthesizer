@@ -186,7 +186,8 @@ void loop() {
 
     // Dynamic adjustment of blend factor alpha
     float distance = fabs(mapped_freq - nearest_freq);
-    float snap_range = 10.0; // Hz around the note
+    // 10 Hz around the note
+    float snap_range = 10.0;
     float alpha = 1.0 - (distance / snap_range);
     
     // The max blend factor is 0.6

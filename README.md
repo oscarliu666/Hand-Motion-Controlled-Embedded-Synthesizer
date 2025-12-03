@@ -29,8 +29,13 @@ To ensure proper timing, we used a 10 MHz timer with a prescaler set so that an 
 The best solution was to switch to the ESP32-WROVER, which has a built-in 8-bit DAC. Despite its lower resolution, it is much faster to send data to than the I2C DAC, which fixed our issues with synthesis.
 
 ### Mapping Sensor Input to Output Sound
+When directly mapping the sensor input to a specific frequency, we found that it was very hard to play when we tested the system for the first time. To somewhat alleviate this, we decided to add some interpolation. By storing an array holding the frequencies for the 13 notes between C3 and C4 and "binning" the measured distance from the sensor into one of 13 divisions, the synthesizer can find an approximate nearest note. Then for a blend factor $\alpha$, we can use the linear interpolation formula to "mix" the mapped value and the nearest value together.
 
+$$f_{blended} = \alpha f_{nearest} + (1 - \alpha) f_{mapped}$$
 
+The higher the alpha value, the smoother the note changes are. By combining the mapped and nearest frequencies, we can achieve some smoothness/glissando between note changes like a theremin, while also making the output sound closer to the notes on a chromatic scale, making it easier to play. 
+
+Furthermore, by letting alpha vary, starting from 0.6 and getting closer to 0.0 as the mapped sensor input approaches a note boundary, the user can reach correct notes even more easily.
 
 ## Citations/Libraries Used
 - Adafruit_VL53L0X.h
@@ -52,6 +57,10 @@ The best solution was to switch to the ESP32-WROVER, which has a built-in 8-bit 
 
 
 ## Future Work
-We are considering adding a TFT touch screen to make it a more immersive and interactive system. We hope to develop a circular UI in which the outer part works as a rotary encoder to adjust the audio frequency in real-time. The user can scroll the outer part of the circle with the frequency displayed in the center of the circular UI.
+We are planning on adding a MIDI interface so that users can connect the synthesizer to their computers and record their playing, allowing for more serious music production. We are also considering more complicated preset sounds, which would be created using methods like FM synthesis or subtractive synthesis.
 
-Additionally, we are considering designing an external enclosure for the entire system. A custom 3D-printed case would not only improve aesthetics but also protect the electronics and make the device safer and more durable for everyday use.
+We are also considering looking for longer-range distance sensors. Our time-of-flight sensor could only consistently detect a maximum hand height of 400 mm above the sensor. A longer range sensor would allow users to achieve a high note range without having to switch octaves as much with the nav switch.
+
+We are also interested in exploring alternative modes of input, such a TFT touch screen, to make it a more immersive and interactive system. We hope to develop a circular UI in which the outer part works as a rotary encoder to adjust the pitch in real-time. The user can scroll the outer part of the circle with the pitch displayed in the center of the circular UI.
+
+Finally, we are thinking of designing an external enclosure for the entire system. A custom 3D-printed case would not only improve aesthetics but also protect the electronics and make the device safer and more durable for everyday use.
