@@ -33,7 +33,7 @@ When directly mapping the sensor input to a specific frequency, we found that it
 
 $$f_{blended} = \alpha f_{nearest} + (1 - \alpha) f_{mapped}$$
 
-The higher the alpha value, the smoother the note changes are. By combining the mapped and nearest frequencies, we can achieve some smoothness/glissando between note changes like a theremin, while also making the output sound closer to the notes on a chromatic scale, making it easier to play. 
+The higher the alpha value, the smoother the note changes are, and vice versa. For example, an alpha of 1.0 would not factor in the nearest frequency at all, but an alpha of 0 will only include the nearest frequency, making the note transitions sound discrete and choppy. By combining the mapped and nearest frequencies, we can achieve some smoothness/glissando between note changes like a theremin, while also making the output sound closer to the notes on a chromatic scale, making it easier to play. 
 
 Furthermore, by letting alpha vary, starting from 0.6 and getting closer to 0.0 as the mapped sensor input approaches a note boundary, the user can reach correct notes even more easily.
 
