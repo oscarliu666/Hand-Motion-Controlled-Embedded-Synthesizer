@@ -2,7 +2,8 @@
 The Digital Theremin is a motion-controlled distance-based synthesizer. The user controls the synthesizer’s pitch with their hand height; by raising their hand higher, they can play higher notes. Through the hand control, this project offers a more interactive way of making digital music compared to regular keyboard-based synths, combining the novelty of playing an analog instrument with the variety of sounds a digital synthesizer can produce. Other gesture-controlled synthesizers are available, but they use more complicated computer vision systems and can be cost-prohibitive. 
 
 ## Circuit Diagram
-![image](https://github.gatech.edu/user-attachments/assets/3135417c-fa21-4202-84f5-a7e5e6973dfd)
+<img width="1052" height="593" alt="image" src="https://github.com/user-attachments/assets/70f1b38e-9f62-4677-b1c1-ddcb15886f15" />
+
 
 ## Peripherals
 - ESP32-WROVER-E (main microcontroller and DAC output source)
