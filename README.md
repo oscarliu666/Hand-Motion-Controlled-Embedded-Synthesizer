@@ -58,7 +58,8 @@ Furthermore, by letting alpha adjust dynamically, starting from 0.0 and getting 
 - Reference code for smoothing (unused and doesn't affect functionality, but still appears in source)
     - https://docs.arduino.cc/built-in-examples/analog/Smoothing/
 
-
+## Demo Video
+[![Motion Synthesizer Demo](https://img.youtube.com/vi/aG5xdUHbO2w/maxresdefault.jpg)](https://youtube.com/shorts/aG5xdUHbO2w)
 ## Future Work
 We are planning on adding a MIDI interface so that users can connect the synthesizer to their computers and record their playing, allowing for more serious music production. We are also considering more complicated preset sounds, which would be created using methods like FM synthesis or subtractive synthesis.
 
